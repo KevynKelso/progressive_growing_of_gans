@@ -37,9 +37,13 @@ def run_model(pickle_file, latents):
         )  # [-1,1] => [0,255]
         images = images.transpose(0, 2, 3, 1)  # NCHW => NHWC
 
+        del Gs
+        del labels
+
         tf.InteractiveSession().close()
 
         return images
+
     except Exception as e:
         tf.InteractiveSession().close()
         raise e
