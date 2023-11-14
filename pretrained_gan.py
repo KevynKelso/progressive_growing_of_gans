@@ -1,8 +1,10 @@
+import os
 import sys
 import pickle
 import numpy as np
 import tensorflow.compat.v1 as tf
 import PIL.Image
+sys.path.append(os.path.dirname(__file__))
 
 class TF1Unpickler(pickle.Unpickler):
     def __init__(self, *args, **kwargs):
