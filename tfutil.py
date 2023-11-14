@@ -12,7 +12,9 @@ import importlib
 import imp
 import numpy as np
 from collections import OrderedDict
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_eager_execution()
+tf.disable_resource_variables()
 
 #----------------------------------------------------------------------------
 # Convenience.
@@ -24,7 +26,7 @@ def is_tf_expression(x):
     return isinstance(x, tf.Tensor) or isinstance(x, tf.Variable) or isinstance(x, tf.Operation)
 
 def shape_to_list(shape):
-    return [dim.value for dim in shape]
+    return [dim for dim in shape.as_list()]
 
 def flatten(x):
     with tf.name_scope('Flatten'):
@@ -559,6 +561,13 @@ class Network:
         self.name = state['name']
         self.static_kwargs = state['static_kwargs']
         self._build_module_src = state['build_module_src']
+
+        # Manual patching of source for tf2 compatibility
+        self._build_module_src = self._build_module_src.replace("import tensorflow as tf", "import tensorflow.compat.v1 as tf\ntf.disable_eager_execution()")
+        self._build_module_src = self._build_module_src.replace("w = get_weight([x.shape[1].value, fmaps], gain=gain, use_wscale=use_wscale)", "w = get_weight([x.shape.as_list()[1], fmaps], gain=gain, use_wscale=use_wscale)")
+        self._build_module_src = self._build_module_src.replace("x = tf.reshape(x, [-1, np.prod([d.value for d in x.shape[1:]])])", "x = tf.reshape(x, [-1, np.prod([d for d in x.shape.as_list()[1:]])])")
+        self._build_module_src = self._build_module_src.replace("w = get_weight([kernel, kernel, x.shape[1].value, fmaps], gain=gain, use_wscale=use_wscale)", "w = get_weight([kernel, kernel, x.shape.as_list()[1], fmaps], gain=gain, use_wscale=use_wscale)")
+
         self._build_func_name = state['build_func_name']
         
         # Parse imported module.
