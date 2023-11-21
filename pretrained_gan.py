@@ -52,8 +52,8 @@ def run_model(pickle_file, latents):
 
 if __name__ == "__main__":
     # Generate latent vectors.
-    latents = np.random.RandomState(901).randn(
-        10, 512 # *Gs.input_shapes[0][1:]
+    latents = np.random.randn(
+        20, 512 # *Gs.input_shapes[0][1:]
     )  # 10 random latents
 
     images = run_model(sys.argv[1], latents)
